@@ -1,0 +1,45 @@
+services:
+  server:
+    build: server
+    restart: unless-stopped
+    volumes:
+      - ./server:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - database
+
+  database:
+    container_name: postgresql_database
+    image: postgres:17.5
+    restart: unless-stopped
+    env_file:
+      - project.env
+  
+  database-migrations:
+    image: flyway/flyway:11.10
+    env_file:
+      - project.env
+    depends_on:
+      - database
+    volumes:
+      - ./database-migrations:/flyway/db/migration
+    command: -connectRetries=60 -baselineOnMigrate=true migrate
+    
+  client:
+    build: client
+    restart: unless-stopped
+    volumes:
+      - ./client:/app
+    ports:
+      - 4321:4321
+    depends_on:
+      - server
+
+  k6-tests:
+    entrypoint: "/bin/true"
+    build: k6-tests
+    volumes:
+      - ./k6-tests/tests:/tests
+    depends_on:
+      - client
