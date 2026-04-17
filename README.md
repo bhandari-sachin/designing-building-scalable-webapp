@@ -1,4 +1,4 @@
-#Benchmarking Indexing
+# Benchmarking Indexing
 ## Starting schema
 
 ```sql
